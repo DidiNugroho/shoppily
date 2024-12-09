@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/schemas/User.schema';
 import { RegisterUserDto } from './dto/RegisterUser';
 import { hashPassword } from 'src/utils/bcrypt';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,8 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return createdUser.save();
+    const savedUser = await createdUser.save();
+
+    return plainToInstance(User, savedUser.toObject());
   }
 }
