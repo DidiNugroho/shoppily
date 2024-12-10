@@ -19,15 +19,17 @@ import { redisStore } from 'cache-manager-redis-store';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const store = await redisStore({
-          url: `redis://${configService.get<string>('REDIS_HOST')}:${configService.get<number>('REDIS_PORT')}`,
+          socket: {
+            host: configService.get<string>('REDIS_HOST'),
+            port: configService.get<number>('REDIS_PORT'),
+          },
         });
+
         return {
           store: store as unknown as CacheStore,
-          ttl: 5000,
-          max: 10,
+          ttl: 3 * 60000,
         };
       },
-      inject: [ConfigService],
     }),
     UsersModule,
   ],
