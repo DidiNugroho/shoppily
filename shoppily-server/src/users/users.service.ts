@@ -5,6 +5,8 @@ import { User } from 'src/schemas/User.schema';
 import { RegisterUserDto } from './dto/RegisterUser';
 import { comparePassword, hashPassword } from 'src/utils/bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { LoginUserDto } from './dto/LoginUser';
+import { signToken } from 'src/utils/jwt';
 
 @Injectable()
 export class UsersService {
@@ -22,17 +24,23 @@ export class UsersService {
     return plainToInstance(User, savedUser.toObject());
   }
 
-  async loginUser(email: string, password: string): Promise<User> {
-    const user = await this.userModel.findOne({ email });
+  async loginUser(loginUserDto: LoginUserDto): Promise<User> {
+    const user = await this.userModel.findOne({ email: loginUserDto.email });
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    if (comparePassword(password, user.password)) {
+    if (comparePassword(loginUserDto.password, user.password)) {
       throw new Error('Invalid password');
     }
 
-    return plainToInstance(User, user.toObject());
+    const token = signToken({
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+    });
+
+    return plainToInstance(User, user.toObject(), token);
   }
 }

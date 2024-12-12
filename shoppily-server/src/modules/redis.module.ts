@@ -1,4 +1,3 @@
-// src/cache/cache.module.ts
 import { Module } from '@nestjs/common';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
