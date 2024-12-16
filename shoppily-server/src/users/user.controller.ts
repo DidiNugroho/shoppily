@@ -13,12 +13,12 @@ import { LoginUserDto } from './dto/LoginUser';
 export class UserController {
   constructor(private usersService: UsersService) {}
 
-  @Post()
+  @Post('register')
   @UsePipes(new ValidationPipe())
   async registerUser(@Body() RegisterUserDto: RegisterUserDto) {
     return this.usersService.registerUser(RegisterUserDto);
   }
-  @Post()
+  @Post('login')
   @UsePipes(new ValidationPipe())
   async loginUser(@Body() LoginUserDto: LoginUserDto) {
     return this.usersService.loginUser(LoginUserDto);

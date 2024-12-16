@@ -7,6 +7,7 @@ import { comparePassword, hashPassword } from 'src/utils/bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { LoginUserDto } from './dto/LoginUser';
 import { signToken } from 'src/utils/jwt';
+import { LoginResponse } from 'src/types';
 
 @Injectable()
 export class UsersService {
@@ -24,14 +25,14 @@ export class UsersService {
     return plainToInstance(User, savedUser.toObject());
   }
 
-  async loginUser(loginUserDto: LoginUserDto): Promise<User> {
+  async loginUser(loginUserDto: LoginUserDto): Promise<LoginResponse> {
     const user = await this.userModel.findOne({ email: loginUserDto.email });
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    if (comparePassword(loginUserDto.password, user.password)) {
+    if (!comparePassword(loginUserDto.password, user.password)) {
       throw new Error('Invalid password');
     }
 
@@ -41,6 +42,9 @@ export class UsersService {
       email: user.email,
     });
 
-    return plainToInstance(User, user.toObject(), token);
+    return {
+      user: plainToInstance(User, user.toObject()),
+      token,
+    };
   }
 }
