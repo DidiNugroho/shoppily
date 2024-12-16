@@ -6,12 +6,17 @@ import { RegisterUserDto } from './dto/RegisterUser';
 import { comparePassword, hashPassword } from 'src/utils/bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { LoginUserDto } from './dto/LoginUser';
-import { signToken } from 'src/utils/jwt';
 import { LoginResponse } from 'src/types';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   async registerUser(registerUserDto: RegisterUserDto): Promise<User> {
     const hashedPassword = hashPassword(registerUserDto.password);
@@ -36,11 +41,14 @@ export class UsersService {
       throw new Error('Invalid password');
     }
 
-    const token = signToken({
-      _id: user._id.toString(),
-      username: user.username,
-      email: user.email,
-    });
+    const token = this.jwtService.sign(
+      {
+        _id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+      },
+      { secret: this.configService.get('JWT_SECRET') },
+    );
 
     return {
       user: plainToInstance(User, user.toObject()),
